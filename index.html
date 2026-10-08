@@ -90,64 +90,8 @@
   </svg>
 
   <main>
-    <svg class="motif" id="motif" viewBox="0 0 1000 1000" role="img" aria-label="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
-      <defs>
-        <!-- Raised embroidery: stitches sit proud of the velvet and catch a little light -->
-        <filter id="thread" x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" result="d"/>
-          <feGaussianBlur in="d" stdDeviation="0.35" result="soft"/>
-          <feDropShadow in="soft" dx="0" dy="2.5" stdDeviation="2.5" flood-color="#200005" flood-opacity="0.65"/>
-        </filter>
-        <filter id="ragged" x="-5%" y="-5%" width="110%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="8" result="n"/>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
-        </filter>
-
-        <path id="foreR" d="M512 600 C 560 565, 640 548, 730 560 C 800 570, 870 600, 920 650
-                             C 950 682, 962 720, 948 742 C 930 760, 880 752, 820 742
-                             C 740 730, 660 722, 590 712 C 548 705, 520 690, 512 660 Z"/>
-        <path id="hindR" d="M515 690 C 560 700, 620 712, 668 740 C 712 768, 730 820, 712 862
-                             C 694 902, 640 918, 590 902 C 548 888, 524 852, 516 812
-                             C 510 776, 510 730, 515 690 Z"/>
-        <clipPath id="clipFore"><use href="#foreR"/></clipPath>
-        <clipPath id="clipHind"><use href="#hindR"/></clipPath>
-
-        <radialGradient id="satinBlue" cx="50%" cy="38%" r="60%">
-          <stop offset="0%" stop-color="#2b4fa8"/>
-          <stop offset="60%" stop-color="#16348a"/>
-          <stop offset="100%" stop-color="#0c1f5c"/>
-        </radialGradient>
-        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#e6c48a"/>
-          <stop offset="50%" stop-color="#b98a4e"/>
-          <stop offset="100%" stop-color="#8a6236"/>
-        </linearGradient>
-        <mask id="crescentMask">
-          <circle cx="500" cy="220" r="118" fill="#fff"/>
-          <circle cx="500" cy="190" r="110" fill="#000"/>
-        </mask>
-      </defs>
-
-      <!-- crescent moon -->
-      <g filter="url(#thread)">
-        <g mask="url(#crescentMask)" id="crescent">
-          <circle cx="500" cy="220" r="118" fill="url(#gold)"/>
-        </g>
-      </g>
-
-      <!-- moth -->
-      <g filter="url(#thread)" id="moth">
-        <g id="antennae" fill="none" stroke="url(#gold)" stroke-linecap="round"></g>
-        <g id="wingR"></g>
-        <use href="#wingR" transform="translate(1000 0) scale(-1 1)"/>
-        <!-- thorax / head -->
-        <ellipse cx="500" cy="602" rx="44" ry="40" fill="#efe6d6"/>
-        <g id="thoraxStitches"></g>
-        <!-- blue disk -->
-        <g id="disk"></g>
-      </g>
-    </svg>
+    <img class="motif" src="moth.png" width="950" height="830"
+         alt="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
   </main>
 
   <!-- Fine pile laid over everything so the embroidery sits in the velvet, not on top of it -->
@@ -155,6 +99,6 @@
     <rect width="100%" height="100%" filter="url(#pile)" opacity="0.35"/>
   </svg>
 
-  <script src="moth.js"></script>
+  <script src="carpet.js"></script>
 </body>
 </html>
