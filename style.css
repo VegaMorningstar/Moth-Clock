@@ -56,12 +56,12 @@ main {
 }
 
 .caption-moon {
-  font-size: clamp(15px, 2.1vmin, 19px);
+  font-size: clamp(12.5px, 1.65vmin, 15px);
   letter-spacing: 0.1em;
 }
 
 .caption-time {
-  font-size: clamp(12px, 1.6vmin, 15px);
+  font-size: clamp(10.5px, 1.3vmin, 12.5px);
   letter-spacing: 0.08em;
   color: #d9c4a0;
   font-variant-numeric: tabular-nums; /* digits don't jiggle as the seconds change */
