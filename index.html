@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Velvet Moth</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Velvet carpet: pile noise, crushed-velvet mottling, tone-on-tone Persian pattern and border -->
+  <svg class="carpet" id="carpet" aria-hidden="true">
+    <defs>
+      <filter id="pile" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85 0.55" numOctaves="3" seed="4"/>
+        <feColorMatrix values="0 0 0 0 0.10
+                               0 0 0 0 0.00
+                               0 0 0 0 0.02
+                               0 0 0 -1.6 1.05"/>
+      </filter>
+      <filter id="sheen" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.006" numOctaves="4" seed="11"/>
+        <feColorMatrix values="0 0 0 0 0.85
+                               0 0 0 0 0.14
+                               0 0 0 0 0.16
+                               1.4 0 0 0 -0.7"/>
+      </filter>
+      <filter id="crush" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="3" seed="23"/>
+        <feColorMatrix values="0 0 0 0 0.08
+                               0 0 0 0 0
+                               0 0 0 0 0.02
+                               0 1.4 0 0 -0.75"/>
+      </filter>
+      <!-- Pressed, tone-on-tone pattern: slightly darker than the pile, softened edges -->
+      <filter id="pressed">
+        <feGaussianBlur stdDeviation="1.4"/>
+      </filter>
+
+      <pattern id="persian" width="220" height="220" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#2a0207" stroke-width="3" stroke-linejoin="round">
+          <!-- eight-pointed star medallion -->
+          <g transform="translate(110 110)">
+            <rect x="-34" y="-34" width="68" height="68"/>
+            <rect x="-34" y="-34" width="68" height="68" transform="rotate(45)"/>
+            <circle r="18"/>
+            <path d="M0 -18 L6 0 L0 18 L-6 0 Z M-18 0 L0 6 L18 0 L0 -6 Z"/>
+          </g>
+          <!-- corner rosettes shared with neighbouring tiles -->
+          <g id="rosette">
+            <circle r="14"/>
+            <path d="M0 -26 Q9 -9 26 0 Q9 9 0 26 Q-9 9 -26 0 Q-9 -9 0 -26 Z"/>
+          </g>
+          <use href="#rosette" x="220"/>
+          <use href="#rosette" y="220"/>
+          <use href="#rosette" x="220" y="220"/>
+          <!-- arabesque vines linking star to rosettes -->
+          <path d="M30 30 C 60 50, 55 70, 80 80 M190 30 C 160 50, 165 70, 140 80
+                   M30 190 C 60 170, 55 150, 80 140 M190 190 C 160 170, 165 150, 140 140"/>
+          <path d="M110 0 l-8 14 l8 8 l8 -8 Z M110 220 l-8 -14 l8 -8 l8 8 Z
+                   M0 110 l14 -8 l8 8 l-8 8 Z M220 110 l-14 -8 l-8 8 l8 8 Z"/>
+        </g>
+      </pattern>
+
+      <pattern id="borderMotif" width="56" height="56" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#2a0207" stroke-width="2.6">
+          <path d="M28 6 L50 28 L28 50 L6 28 Z"/>
+          <path d="M28 18 L38 28 L28 38 L18 28 Z"/>
+        </g>
+      </pattern>
+
+      <radialGradient id="vignette" cx="50%" cy="48%" r="75%">
+        <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#140003" stop-opacity="0.7"/>
+      </radialGradient>
+    </defs>
+
+    <rect width="100%" height="100%" fill="#7a111b"/>
+    <rect width="100%" height="100%" filter="url(#crush)"/>
+    <g filter="url(#pressed)" opacity="0.38">
+      <rect width="100%" height="100%" fill="url(#persian)"/>
+      <g id="border">
+        <rect id="bandOuter" fill="none" stroke="#2a0207" stroke-width="3"/>
+        <rect id="bandInner" fill="none" stroke="#2a0207" stroke-width="3"/>
+        <path id="bandFill" fill="url(#borderMotif)" fill-rule="evenodd"/>
+      </g>
+    </g>
+    <rect width="100%" height="100%" filter="url(#sheen)" opacity="0.4"/>
+    <rect width="100%" height="100%" filter="url(#pile)"/>
+    <rect width="100%" height="100%" fill="url(#vignette)"/>
+  </svg>
+
+  <main>
+    <svg class="motif" id="motif" viewBox="0 0 1000 1000" role="img" aria-label="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
+      <defs>
+        <!-- Raised embroidery: stitches sit proud of the velvet and catch a little light -->
+        <filter id="thread" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" result="d"/>
+          <feGaussianBlur in="d" stdDeviation="0.35" result="soft"/>
+          <feDropShadow in="soft" dx="0" dy="2.5" stdDeviation="2.5" flood-color="#200005" flood-opacity="0.65"/>
+        </filter>
+        <filter id="ragged" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="8" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+        </filter>
+
+        <path id="foreR" d="M512 600 C 560 565, 640 548, 730 560 C 800 570, 870 600, 920 650
+                             C 950 682, 962 720, 948 742 C 930 760, 880 752, 820 742
+                             C 740 730, 660 722, 590 712 C 548 705, 520 690, 512 660 Z"/>
+        <path id="hindR" d="M515 690 C 560 700, 620 712, 668 740 C 712 768, 730 820, 712 862
+                             C 694 902, 640 918, 590 902 C 548 888, 524 852, 516 812
+                             C 510 776, 510 730, 515 690 Z"/>
+        <clipPath id="clipFore"><use href="#foreR"/></clipPath>
+        <clipPath id="clipHind"><use href="#hindR"/></clipPath>
+
+        <radialGradient id="satinBlue" cx="50%" cy="38%" r="60%">
+          <stop offset="0%" stop-color="#2b4fa8"/>
+          <stop offset="60%" stop-color="#16348a"/>
+          <stop offset="100%" stop-color="#0c1f5c"/>
+        </radialGradient>
+        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e6c48a"/>
+          <stop offset="50%" stop-color="#b98a4e"/>
+          <stop offset="100%" stop-color="#8a6236"/>
+        </linearGradient>
+        <mask id="crescentMask">
+          <circle cx="500" cy="220" r="118" fill="#fff"/>
+          <circle cx="500" cy="190" r="110" fill="#000"/>
+        </mask>
+      </defs>
+
+      <!-- crescent moon -->
+      <g filter="url(#thread)">
+        <g mask="url(#crescentMask)" id="crescent">
+          <circle cx="500" cy="220" r="118" fill="url(#gold)"/>
+        </g>
+      </g>
+
+      <!-- moth -->
+      <g filter="url(#thread)" id="moth">
+        <g id="antennae" fill="none" stroke="url(#gold)" stroke-linecap="round"></g>
+        <g id="wingR"></g>
+        <use href="#wingR" transform="translate(1000 0) scale(-1 1)"/>
+        <!-- thorax / head -->
+        <ellipse cx="500" cy="602" rx="44" ry="40" fill="#efe6d6"/>
+        <g id="thoraxStitches"></g>
+        <!-- blue disk -->
+        <g id="disk"></g>
+      </g>
+    </svg>
+  </main>
+
+  <!-- Fine pile laid over everything so the embroidery sits in the velvet, not on top of it -->
+  <svg class="pile-over" aria-hidden="true">
+    <rect width="100%" height="100%" filter="url(#pile)" opacity="0.35"/>
+  </svg>
+
+  <script src="moth.js"></script>
+</body>
+</html>
