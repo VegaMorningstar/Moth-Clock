@@ -1,0 +1,45 @@
+html, body { overflow: auto; height: auto; min-height: 100%; }
+
+.compare {
+  display: block;
+  height: auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 16px 64px;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f1e6d0;
+}
+
+.compare h1 {
+  margin: 0 0 28px;
+  text-align: center;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  color: #e6c48a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: 28px;
+}
+
+.card {
+  margin: 0;
+  padding: 24px 20px 18px;
+  border: 1px solid rgb(230 196 138 / 0.35);
+  border-radius: 6px;
+  background: rgb(40 0 8 / 0.18);
+}
+
+.art { width: 100%; }
+.art img { display: block; width: 100%; height: auto; }
+.art .moon { width: 100%; margin-bottom: 6%; }
+
+figcaption { margin-top: 14px; font-size: 18px; }
+figcaption .num {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; margin-right: 6px;
+  border-radius: 50%; background: #e6c48a; color: #4a0810; font-size: 14px;
+}
+figcaption small { display: block; margin-top: 4px; font-size: 14px; color: #d9c4a0; }
