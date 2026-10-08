@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Velvet Moth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -90,8 +93,76 @@
   </svg>
 
   <main>
-    <img class="motif" src="moth.svg" width="950" height="830"
-         alt="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
+    <div class="motif-wrap">
+      <img class="motif" src="moth.svg" width="950" height="830"
+           alt="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
+
+      <!-- Clock on the blue disk. Same coordinate space as moth.svg; the disk is centred at
+           (476, 589.5) with radius 124 (printed by tools/build_moth.py). -->
+      <svg class="clock" viewBox="0 0 950 830" role="img" aria-label="Clock">
+        <defs>
+          <linearGradient id="clockGold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f3dca6"/>
+            <stop offset="45%" stop-color="#d2a85f"/>
+            <stop offset="100%" stop-color="#8a6236"/>
+          </linearGradient>
+          <linearGradient id="handGold" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#9a6e38"/>
+            <stop offset="50%" stop-color="#f6e2b0"/>
+            <stop offset="100%" stop-color="#b98a4e"/>
+          </linearGradient>
+          <!-- numerals and dots are stitched like the rest of the embroidery -->
+          <filter id="stitched" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" result="d"/>
+            <feDropShadow in="d" dx="0" dy="1.5" stdDeviation="1.2" flood-color="#030a24" flood-opacity="0.7"/>
+          </filter>
+          <!-- hands are polished metal, lifted off the disk -->
+          <filter id="lifted" x="-50%" y="-20%" width="200%" height="140%">
+            <feDropShadow dx="1.5" dy="3" stdDeviation="1.6" flood-color="#020818" flood-opacity="0.6"/>
+          </filter>
+        </defs>
+
+        <g transform="translate(476 589.5)">
+          <g class="dial" filter="url(#stitched)" fill="url(#clockGold)" stroke="#5a3d1c" stroke-width="0.6"
+             paint-order="stroke" font-family="Cinzel, Georgia, serif" font-weight="600" text-anchor="middle">
+            <text x="0" y="-81" font-size="27">12</text>
+            <text x="93" y="9.5" font-size="27">3</text>
+            <text x="0" y="101" font-size="27">6</text>
+            <text x="-93" y="9.5" font-size="27">9</text>
+            <g id="dots"></g>
+          </g>
+
+          <g fill="url(#handGold)" stroke="#5a3d1c" stroke-width="0.7" stroke-linejoin="round" filter="url(#lifted)">
+            <!-- hour: Breguet-style, an open moon ring below a lance tip -->
+            <g id="hourHand">
+              <path d="M0 16 L3.2 10 L2.6 4 L1.9 -35 L-1.9 -35 L-2.6 4 L-3.2 10 Z"/>
+              <circle cy="-43" r="7.6" fill="none" stroke="url(#handGold)" stroke-width="3.4"/>
+              <circle cy="-43" r="9.3" fill="none" stroke="#5a3d1c" stroke-width="0.5"/>
+              <circle cy="-43" r="5.9" fill="none" stroke="#5a3d1c" stroke-width="0.5"/>
+              <path d="M0 -74 L4.6 -57 L1.5 -50.6 L-1.5 -50.6 L-4.6 -57 Z"/>
+            </g>
+            <!-- minute: longer and finer, the same moon ring -->
+            <g id="minuteHand">
+              <path d="M0 20 L2.6 13 L2 4 L1.3 -70 L-1.3 -70 L-2 4 L-2.6 13 Z"/>
+              <circle cy="-76" r="5.4" fill="none" stroke="url(#handGold)" stroke-width="2.6"/>
+              <circle cy="-76" r="6.8" fill="none" stroke="#5a3d1c" stroke-width="0.45"/>
+              <circle cy="-76" r="4" fill="none" stroke="#5a3d1c" stroke-width="0.45"/>
+              <path d="M0 -110 L3.4 -90 L1.1 -81.6 L-1.1 -81.6 L-3.4 -90 Z"/>
+            </g>
+            <!-- second: a fine needle with a crescent counterweight -->
+            <g id="secondHand">
+              <path d="M0 -114 L0.9 -10 L0.9 16 L-0.9 16 L-0.9 -10 Z" stroke-width="0.4"/>
+              <path d="M-5.2 20 A5.6 5.6 0 0 0 5.2 20 A4.6 4.6 0 0 1 -5.2 20 Z" transform="translate(0 4)" stroke-width="0.4"/>
+            </g>
+            <!-- centre cap: a gold boss with a sapphire set in it -->
+            <circle r="7.5"/>
+            <circle r="3.4" fill="#0c1f5c" stroke="#e6c48a" stroke-width="0.8"/>
+            <circle cx="-1" cy="-1.1" r="0.9" fill="#9fb4ff" stroke="none"/>
+          </g>
+        </g>
+      </svg>
+    </div>
   </main>
 
   <!-- Fine pile laid over everything so the embroidery sits in the velvet, not on top of it -->
@@ -100,5 +171,6 @@
   </svg>
 
   <script src="carpet.js"></script>
+  <script src="clock.js"></script>
 </body>
 </html>

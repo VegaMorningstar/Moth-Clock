@@ -12,7 +12,7 @@ import sys
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-from skimage import draw, measure
+from skimage import measure
 
 src, dst = sys.argv[1], sys.argv[2]
 img = np.asarray(Image.open(src).convert('RGBA')).astype(float)
@@ -48,12 +48,6 @@ DISK_X = (xs.max() + xs.min()) / 2
 DISK_Y = ys.max() - DISK_R + 1
 circle = np.hypot(xx - DISK_X, yy - DISK_Y) <= DISK_R + 1
 disk = circle
-
-# Gold diamond marking at the top of the disk, as in the first design.
-k = DISK_R / 104
-SHIELD = np.array([(0, -68), (32, -40), (16, -8), (0, 8), (-16, -8), (-32, -40)]) * k + (DISK_X, DISK_Y)
-shield = np.zeros_like(on)
-shield[draw.polygon(SHIELD[:, 1], SHIELD[:, 0], shield.shape)] = True
 
 # Antennae: the thin parts of the silhouette above the thorax.
 thick = ndi.binary_opening(moth, structure=np.ones((15, 15)))
@@ -175,7 +169,6 @@ def flecks(mask, count, colours, length=(3, 8)):
             for y, x in pts[rng.choice(len(pts), min(count, len(pts)), replace=False)]]
 
 
-shield_flecks = flecks(shield, 45, ['#efe5d3', '#e6c48a', '#8f6638'])
 antenna_flecks = flecks(antennae, 90, ['#e6c48a', '#8f6638', '#d8b57f'], (2, 5))
 
 # Crescent: dense couched stitches along the curve, then seed stitches.
@@ -193,7 +186,6 @@ wing_d = trace(moth & ~antennae)
 gold_d = trace(gold, smooth=0.6, tol=0.3)
 disk_d = (f'M{DISK_X - DISK_R:.1f} {DISK_Y:.1f}a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {2 * DISK_R:.1f} 0'
           f'a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {-2 * DISK_R:.1f} 0Z')
-shield_d = 'M' + 'L'.join(f'{x:.1f} {y:.1f}' for x, y in SHIELD) + 'Z'
 ant_d = trace(antennae, smooth=0.8)
 # Horns are where the two circles cross.
 hy = MOON_Y - (MOON_R ** 2 - INNER_R ** 2 + INNER_DY ** 2) / (2 * INNER_DY)
@@ -228,7 +220,6 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
   <clipPath id="clipGold"><path d="{gold_d}"/></clipPath>
   <clipPath id="clipWing"><path d="{wing_d}"/></clipPath>
   <clipPath id="clipDisk"><path d="{disk_d}"/></clipPath>
-  <clipPath id="clipShield"><path d="{shield_d}"/></clipPath>
   <clipPath id="clipAnt"><path d="{ant_d}"/></clipPath>
   <clipPath id="clipMoon"><path d="{moon_d}"/></clipPath>
 </defs>
@@ -259,11 +250,6 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
     <path d="{disk_d}" fill="url(#satinBlue)"/>
     {J(disk_lines)}
     <circle cx="{DISK_X:.1f}" cy="{DISK_Y:.1f}" r="{DISK_R - 0.5:.1f}" stroke="#0a1a4d" stroke-width="2.5"/>
-  </g>
-
-  <g clip-path="url(#clipShield)">
-    <path d="{shield_d}" fill="#c9a06a"/>
-    {J(shield_flecks)}
   </g>
 </g>
 </svg>
