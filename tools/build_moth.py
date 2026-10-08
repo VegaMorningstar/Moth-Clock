@@ -1,9 +1,9 @@
 # Builds moth.svg: clean vector embroidery in the shape of the photo cutout.
 #
-# Only the moth's shape comes from the photo: its silhouette, antennae and the centre
-# lines of the gold veins. The crescent and the disk are the original geometric
+# Only the moth's shape comes from the photo: its silhouette, antennae and the gold
+# pattern on the wings (veins and gold-dusted margins). The crescent and the disk are the original geometric
 # designs, sized and placed where the photo has them. Everything inside them is
-# drawn fresh as crisp satin, running-stitch veins and gold hatching.
+# drawn fresh as crisp satin, gold stitching and gold edging.
 #
 # Usage: python tools/build_moth.py source/moth-cutout.png moth.svg
 
@@ -12,7 +12,7 @@ import sys
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-from skimage import draw, measure, morphology
+from skimage import draw, measure
 
 src, dst = sys.argv[1], sys.argv[2]
 img = np.asarray(Image.open(src).convert('RGBA')).astype(float)
@@ -59,12 +59,28 @@ shield[draw.polygon(SHIELD[:, 1], SHIELD[:, 0], shield.shape)] = True
 thick = ndi.binary_opening(moth, structure=np.ones((15, 15)))
 antennae = moth & ~ndi.binary_dilation(thick, iterations=2) & (yy < DISK_Y - DISK_R)
 
-# Gold veins: thread clearly darker or warmer than the white satin around it.
+# Gold pattern: wherever the photo's thread is warm gold, or clearly darker than the
+# white satin around it. This is the veining and gold-dusted margin of the photo.
 ref = ndi.maximum_filter(ndi.gaussian_filter(np.where(on, lum, 0), 1), size=11)
-gold = moth & ~blue & (((R - B) > 62) | ((ref - lum) > 40))
-gold = ndi.binary_opening(ndi.gaussian_filter(gold.astype(float), 1.2) > 0.5)
-interior = ndi.binary_erosion(moth & ~disk & ~antennae, iterations=9)
-veins_skel = morphology.skeletonize(gold & interior)
+goldness = np.clip(((R - B) - 40) / 40, 0, 1) + np.clip((ref - lum - 30) / 30, 0, 1)
+gold = moth & ~disk & ~antennae & (ndi.gaussian_filter(np.clip(goldness, 0, 1), 0.7) > 0.55)
+lab, n = ndi.label(gold)
+gold = np.isin(lab, np.where(ndi.sum(gold, lab, range(1, n + 1)) > 5)[0] + 1)
+
+# Thread direction in the photo: gold stitches run along the stripes, across the light gradient.
+L = ndi.gaussian_filter(lum, 1.0)
+gx, gy = ndi.sobel(L, 1), ndi.sobel(L, 0)
+jxx, jyy, jxy = (ndi.gaussian_filter(v, 3.5) for v in (gx * gx, gy * gy, gx * gy))
+grad_angle = 0.5 * np.arctan2(2 * jxy, jxx - jyy)
+coherence = np.hypot(jxx - jyy, 2 * jxy) / (jxx + jyy + 1e-6)
+
+
+def thread_angle(x, y):
+    radial = np.arctan2(y - DISK_Y, x - DISK_X)
+    if coherence[int(y), int(x)] < 0.25:
+        return radial
+    a = grad_angle[int(y), int(x)] + np.pi / 2
+    return a + np.pi if np.cos(a - radial) < 0 else a
 
 
 def trace(mask, smooth=1.0, tol=0.4):
@@ -91,40 +107,12 @@ def spline(p, closed):
     return ''.join(d) + ('Z' if closed else '')
 
 
-def skeleton_paths(skel, min_len=18):
-    """Walk a 1-px skeleton into polylines, splitting at junctions."""
-    pts = set(zip(*np.where(skel)))
-    nbrs = lambda p: [(p[0] + dy, p[1] + dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1)
-                      if (dy or dx) and (p[0] + dy, p[1] + dx) in pts]
-    degree = {p: len(nbrs(p)) for p in pts}
-    seen, paths = set(), []
-    starts = sorted(p for p in pts if degree[p] != 2) + sorted(pts)
-    for s in starts:
-        for nb in nbrs(s):
-            if (s, nb) in seen:
-                continue
-            line_, prev, cur = [s], s, nb
-            seen.add((s, nb))
-            while True:
-                seen.add((cur, prev))
-                line_.append(cur)
-                nxt = [q for q in nbrs(cur) if q != prev and (cur, q) not in seen]
-                if degree[cur] != 2 or not nxt:
-                    break
-                seen.add((cur, nxt[0]))
-                prev, cur = cur, nxt[0]
-            arr = np.array(line_, float)[:, ::-1]
-            span = np.hypot(*(arr[-1] - arr[0]))
-            # keep vein-like runs; drop the squiggles left by stitch texture
-            if len(line_) >= min_len and span > 0.62 * len(line_):
-                paths.append(measure.approximate_polygon(arr, 2.0))
-    return paths
-
 
 # --- drawing ------------------------------------------------------------------
 
 CREAM = ['#f4ede1', '#efe5d3', '#e8dcc6', '#f8f3ea', '#e2d4bb']
 GOLD = ['#c9a06a', '#b98a4e', '#d8b57f', '#a87a45', '#8f6638']
+GOLD_DEEP = ['#c9a06a', '#b98a4e', '#a87a45', '#8f6638', '#7d5a33']  # the photo's gold is a shade browner
 pick = lambda c: c[rng.integers(len(c))]
 
 
@@ -142,25 +130,18 @@ for deg in np.arange(0, 360, 0.32):
     satin.append(line(DISK_X, DISK_Y, DISK_X + np.cos(t) * reach, DISK_Y + np.sin(t) * reach,
                       pick(CREAM), rng.uniform(1.6, 2.6)))
 
-# Veins: running stitch along the photo's vein lines.
-vein_paths = skeleton_paths(veins_skel)
-veins = []
-for p in vein_paths:
-    veins.append(f'<path d="{spline(p, closed=False)}" stroke="{pick(["#b98a4e", "#a87a45", "#8f6638"])}" '
-                 f'stroke-width="{rng.uniform(3, 4.2):.2f}" '
-                 f'stroke-dasharray="{rng.uniform(6, 9):.1f} {rng.uniform(2, 3.5):.1f}"/>')
-
-# Sketchy gold hatching through the wings, denser where the photo has gold.
-hatch = []
-gold_soft = ndi.gaussian_filter(gold.astype(float), 3)
-cand = np.argwhere(moth & ~disk & ~antennae)
-for y, x in cand[rng.choice(len(cand), 2600, replace=False)]:
-    if rng.random() > 0.15 + 0.85 * gold_soft[y, x]:
-        continue
-    t = np.arctan2(y - DISK_Y, x - DISK_X) + rng.normal(0, 0.15)
-    l = rng.uniform(5, 13)
-    hatch.append(line(x, y, x + np.cos(t) * l, y + np.sin(t) * l, pick(GOLD), rng.uniform(1.3, 2.1),
-                      f' opacity="{rng.uniform(0.55, 0.95):.2f}"'))
+# Gold pattern: crisp short stitches laid along the photo's thread, clipped to the traced gold shapes.
+gold_lines = []
+fill = ndi.binary_dilation(gold, iterations=1)
+for y0 in np.arange(0, H, 2.3):
+    for x0 in np.arange(0, W, 2.3):
+        x, y = x0 + rng.uniform(0, 2.3), y0 + rng.uniform(0, 2.3)
+        if int(x) >= W or int(y) >= H or not fill[int(y), int(x)]:
+            continue
+        t = thread_angle(x, y) + rng.normal(0, 0.1)
+        l = rng.uniform(3, 5)
+        gold_lines.append(line(x - np.cos(t) * l, y - np.sin(t) * l, x + np.cos(t) * l, y + np.sin(t) * l,
+                               pick(GOLD_DEEP), rng.uniform(1.4, 2)))
 
 # Gold-dusted margin: short stitches pointing in from the edge, longer toward the tips.
 edge = []
@@ -172,8 +153,7 @@ for c in measure.find_contours(np.pad(body, 1), 0.5):
         x, y = c[min(np.searchsorted(pos, s), len(c) - 1)]
         dx, dy = DISK_X - x, DISK_Y - y
         d = np.hypot(dx, dy)
-        far = np.clip((d - DISK_R) / 300, 0, 1)
-        l = rng.uniform(6, 14 + 30 * far)
+        l = rng.uniform(4, 10)
         edge.append(line(x, y, x + dx / d * l, y + dy / d * l, pick(GOLD), rng.uniform(1.4, 2.6),
                          f' opacity="{rng.uniform(0.7, 1):.2f}"'))
 
@@ -210,6 +190,7 @@ for y, x in pts[rng.choice(len(pts), 380, replace=False)]:
                       f'fill="{pick(["#e6c48a", "#f0d9a8", "#8f6638"])}"/>')
 
 wing_d = trace(moth & ~antennae)
+gold_d = trace(gold, smooth=0.6, tol=0.3)
 disk_d = (f'M{DISK_X - DISK_R:.1f} {DISK_Y:.1f}a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {2 * DISK_R:.1f} 0'
           f'a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {-2 * DISK_R:.1f} 0Z')
 shield_d = 'M' + 'L'.join(f'{x:.1f} {y:.1f}' for x, y in SHIELD) + 'Z'
@@ -244,6 +225,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
     <stop offset="60%" stop-color="#16348a"/>
     <stop offset="100%" stop-color="#0c1f5c"/>
   </radialGradient>
+  <clipPath id="clipGold"><path d="{gold_d}"/></clipPath>
   <clipPath id="clipWing"><path d="{wing_d}"/></clipPath>
   <clipPath id="clipDisk"><path d="{disk_d}"/></clipPath>
   <clipPath id="clipShield"><path d="{shield_d}"/></clipPath>
@@ -265,8 +247,10 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
   <g clip-path="url(#clipWing)">
     <path d="{wing_d}" fill="#ece2d0"/>
     {J(satin)}
-    {J(veins)}
-    {J(hatch)}
+    <g clip-path="url(#clipGold)">
+      <path d="{gold_d}" fill="#8f6638"/>
+      {J(gold_lines)}
+    </g>
     <path d="{wing_d}" stroke="#b98a4e" stroke-width="9" filter="url(#ragged)"/>
     {J(edge)}
   </g>
@@ -285,4 +269,4 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
 </svg>
 '''
 open(dst, 'w').write(svg)
-print(f'{len(vein_paths)} veins; {svg.count("<line")} stitches; {len(svg) // 1024} KB')
+print(f'{svg.count("<line")} stitches; {len(svg) // 1024} KB')
