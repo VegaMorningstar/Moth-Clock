@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="compare.css">
 </head>
 <body>
-  <!-- Velvet carpet: pile noise, crushed-velvet mottling, tone-on-tone Persian pattern and border -->
+  <!-- Velvet: pile noise, crushed-velvet mottling, sheen and a soft vignette -->
   <svg class="carpet" id="carpet" aria-hidden="true">
     <defs>
       <filter id="pile" x="0" y="0" width="100%" height="100%">
@@ -32,43 +32,6 @@
                                0 0 0 0 0.02
                                0 1.4 0 0 -0.75"/>
       </filter>
-      <!-- Pressed, tone-on-tone pattern: slightly darker than the pile, softened edges -->
-      <filter id="pressed">
-        <feGaussianBlur stdDeviation="1.4"/>
-      </filter>
-
-      <pattern id="persian" width="220" height="220" patternUnits="userSpaceOnUse">
-        <g fill="none" stroke="#2a0207" stroke-width="3" stroke-linejoin="round">
-          <!-- eight-pointed star medallion -->
-          <g transform="translate(110 110)">
-            <rect x="-34" y="-34" width="68" height="68"/>
-            <rect x="-34" y="-34" width="68" height="68" transform="rotate(45)"/>
-            <circle r="18"/>
-            <path d="M0 -18 L6 0 L0 18 L-6 0 Z M-18 0 L0 6 L18 0 L0 -6 Z"/>
-          </g>
-          <!-- corner rosettes shared with neighbouring tiles -->
-          <g id="rosette">
-            <circle r="14"/>
-            <path d="M0 -26 Q9 -9 26 0 Q9 9 0 26 Q-9 9 -26 0 Q-9 -9 0 -26 Z"/>
-          </g>
-          <use href="#rosette" x="220"/>
-          <use href="#rosette" y="220"/>
-          <use href="#rosette" x="220" y="220"/>
-          <!-- arabesque vines linking star to rosettes -->
-          <path d="M30 30 C 60 50, 55 70, 80 80 M190 30 C 160 50, 165 70, 140 80
-                   M30 190 C 60 170, 55 150, 80 140 M190 190 C 160 170, 165 150, 140 140"/>
-          <path d="M110 0 l-8 14 l8 8 l8 -8 Z M110 220 l-8 -14 l8 -8 l8 8 Z
-                   M0 110 l14 -8 l8 8 l-8 8 Z M220 110 l-14 -8 l-8 8 l8 8 Z"/>
-        </g>
-      </pattern>
-
-      <pattern id="borderMotif" width="56" height="56" patternUnits="userSpaceOnUse">
-        <g fill="none" stroke="#2a0207" stroke-width="2.6">
-          <path d="M28 6 L50 28 L28 50 L6 28 Z"/>
-          <path d="M28 18 L38 28 L28 38 L18 28 Z"/>
-        </g>
-      </pattern>
-
       <radialGradient id="vignette" cx="50%" cy="48%" r="75%">
         <stop offset="55%" stop-color="#000" stop-opacity="0"/>
         <stop offset="100%" stop-color="#140003" stop-opacity="0.7"/>
@@ -77,14 +40,6 @@
 
     <rect width="100%" height="100%" fill="#7a111b"/>
     <rect width="100%" height="100%" filter="url(#crush)"/>
-    <g filter="url(#pressed)" opacity="0.38">
-      <rect width="100%" height="100%" fill="url(#persian)"/>
-      <g id="border">
-        <rect id="bandOuter" fill="none" stroke="#2a0207" stroke-width="3"/>
-        <rect id="bandInner" fill="none" stroke="#2a0207" stroke-width="3"/>
-        <path id="bandFill" fill="url(#borderMotif)" fill-rule="evenodd"/>
-      </g>
-    </g>
     <rect width="100%" height="100%" filter="url(#sheen)" opacity="0.4"/>
     <rect width="100%" height="100%" filter="url(#pile)"/>
     <rect width="100%" height="100%" fill="url(#vignette)"/>
@@ -136,6 +91,5 @@
     <rect width="100%" height="100%" filter="url(#pile)" opacity="0.35"/>
   </svg>
 
-  <script src="carpet.js"></script>
 </body>
 </html>
