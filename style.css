@@ -38,12 +38,12 @@ main {
 .motif-wrap {
   position: relative;
   /* leave room under the moth for the caption on short screens */
-  width: min(86vmin, 760px, calc((100vh - 140px) * 950 / 830));
+  width: min(86vmin, 760px, calc((100vh - 160px) * 950 / 830));
 }
 
 .caption {
   position: relative;
-  margin: 4px 0 0;
+  margin: 22px 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
