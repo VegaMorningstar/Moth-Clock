@@ -226,3 +226,29 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
 '''
 open(dst, 'w').write(svg)
 print(f'{svg.count("<line")} stitches; {len(svg) // 1024} KB')
+
+# Shadow, as cast by the moon above the moth (moon.js draws it at 476,135). It is the
+# silhouette projected away from that point: a tight contact shadow that lifts the
+# stitches off the velvet, and a softer one cast further out.
+LIGHT_X, LIGHT_Y = 476, 135
+silhouette_d = trace(moth)
+
+
+def projected(scale):
+    return f'translate({LIGHT_X} {LIGHT_Y}) scale({scale}) translate({-LIGHT_X} {-LIGHT_Y})'
+
+
+# Padded so the projected, blurred edges aren't cut off; style.css offsets it by the same amount.
+PAD = 60
+shadow = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-PAD} {-PAD} {W + 2 * PAD} {H + 2 * PAD}" width="{W + 2 * PAD}" height="{H + 2 * PAD}">
+<defs>
+  <filter id="contact" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="cast" x="-15%" y="-15%" width="130%" height="130%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<path d="{silhouette_d}" transform="{projected(1.045)}" fill="#2a0008" fill-opacity="0.55" filter="url(#cast)"/>
+<path d="{silhouette_d}" transform="{projected(1.012)}" fill="#1a0004" fill-opacity="0.7" filter="url(#contact)"/>
+</svg>
+'''
+shadow_dst = dst.replace('.svg', '-shadow.svg')
+open(shadow_dst, 'w').write(shadow)
+print(f'{shadow_dst}: {len(shadow) // 1024} KB')

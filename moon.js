@@ -124,6 +124,9 @@
     litPath.setAttribute('d', litShape(fraction));
     litPath.setAttribute('transform', `rotate(${(litDirection - 90).toFixed(2)})`);
 
+    // a brighter moon casts a deeper shadow under the moth; never fully gone at new moon
+    document.documentElement.style.setProperty('--moonlight', (0.7 + 0.3 * fraction).toFixed(3));
+
     const name = MoonPhase.phaseName(phase);
     const percent = Math.round(fraction * 100);
     label.textContent = `${name} · ${percent}%`;
