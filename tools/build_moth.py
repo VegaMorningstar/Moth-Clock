@@ -1,7 +1,8 @@
 # Builds moth.svg: clean vector embroidery in the shape of the photo cutout.
 #
-# Only shapes come from the photo: the moth's silhouette, the crescent, the shield
-# on the disk, and the centre lines of the gold veins. Everything inside them is
+# Only the moth's shape comes from the photo: its silhouette, antennae and the centre
+# lines of the gold veins. The crescent and the disk are the original geometric
+# designs, sized and placed where the photo has them. Everything inside them is
 # drawn fresh as crisp satin, running-stitch veins and gold hatching.
 #
 # Usage: python tools/build_moth.py source/moth-cutout.png moth.svg
@@ -11,7 +12,7 @@ import sys
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-from skimage import measure, morphology
+from skimage import draw, measure, morphology
 
 src, dst = sys.argv[1], sys.argv[2]
 img = np.asarray(Image.open(src).convert('RGBA')).astype(float)
@@ -32,23 +33,27 @@ SPLIT = rows[gap[0]] + 10  # crescent above, moth below
 
 moth = on & (yy >= SPLIT)
 moth = ndi.binary_fill_holes(ndi.binary_closing(moth, iterations=2))
-moon = on & (yy < SPLIT)
-moon = ndi.binary_fill_holes(ndi.binary_closing(moon, iterations=5))
-moon = ndi.binary_opening(moon, iterations=2)
+# Crescent: a clean geometric crescent, sized and placed where the photo's one sits.
+mp = np.argwhere(on & (yy < SPLIT))
+MOON_R = (mp[:, 1].max() - mp[:, 1].min()) / 2 * 1.02
+MOON_X = (mp[:, 1].max() + mp[:, 1].min()) / 2
+MOON_Y = mp[:, 0].max() - MOON_R
+INNER_R, INNER_DY = MOON_R * 0.932, MOON_R * 0.254  # proportions of the first design
+moon = ((np.hypot(xx - MOON_X, yy - MOON_Y) <= MOON_R)
+        & (np.hypot(xx - MOON_X, yy - MOON_Y + INNER_DY) > INNER_R))
 
 ys, xs = np.where(blue)
 DISK_R = (xs.max() - xs.min() + 1) / 2
 DISK_X = (xs.max() + xs.min()) / 2
 DISK_Y = ys.max() - DISK_R + 1
 circle = np.hypot(xx - DISK_X, yy - DISK_Y) <= DISK_R + 1
-# Lower half is a true circle; the top half follows the photo, where thorax and shield overlap it.
-disk = circle & (ndi.binary_dilation(blue, iterations=2) | (yy > DISK_Y))
+disk = circle
 
-# The shield is the gold shape cut into the top of the disk: inside the blue's outline but not blue.
-shield = morphology.convex_hull_image(blue) & ~ndi.binary_dilation(blue, iterations=1)
-lab, n = ndi.label(shield)
-shield = lab == (np.argmax(ndi.sum(shield, lab, range(1, n + 1))) + 1)
-shield = ndi.binary_fill_holes(ndi.binary_opening(shield, iterations=2))
+# Gold diamond marking at the top of the disk, as in the first design.
+k = DISK_R / 104
+SHIELD = np.array([(0, -68), (32, -40), (16, -8), (0, 8), (-16, -8), (-32, -40)]) * k + (DISK_X, DISK_Y)
+shield = np.zeros_like(on)
+shield[draw.polygon(SHIELD[:, 1], SHIELD[:, 0], shield.shape)] = True
 
 # Antennae: the thin parts of the silhouette above the thorax.
 thick = ndi.binary_opening(moth, structure=np.ones((15, 15)))
@@ -190,15 +195,14 @@ def flecks(mask, count, colours, length=(3, 8)):
             for y, x in pts[rng.choice(len(pts), min(count, len(pts)), replace=False)]]
 
 
-shield_flecks = flecks(shield, 60, ['#efe5d3', '#e6c48a', '#8f6638'])
+shield_flecks = flecks(shield, 45, ['#efe5d3', '#e6c48a', '#8f6638'])
 antenna_flecks = flecks(antennae, 90, ['#e6c48a', '#8f6638', '#d8b57f'], (2, 5))
 
-# Crescent: dense couched stitches across the band, then seed stitches.
+# Crescent: dense couched stitches along the curve, then seed stitches.
 pts = np.argwhere(moon)
-MC = np.array([pts[:, 1].mean(), pts[:, 0].min() - 30])
 moon_lines = []
 for y, x in pts[rng.choice(len(pts), 1400, replace=False)]:
-    t = np.arctan2(y - MC[1], x - MC[0]) + np.pi / 2 + rng.uniform(-0.5, 0.5)
+    t = np.arctan2(y - MOON_Y, x - MOON_X) + np.pi / 2 + rng.uniform(-0.5, 0.5)
     l = rng.uniform(5, 11)
     moon_lines.append(line(x, y, x + np.cos(t) * l, y + np.sin(t) * l, pick(GOLD), rng.uniform(2, 3)))
 for y, x in pts[rng.choice(len(pts), 380, replace=False)]:
@@ -206,10 +210,15 @@ for y, x in pts[rng.choice(len(pts), 380, replace=False)]:
                       f'fill="{pick(["#e6c48a", "#f0d9a8", "#8f6638"])}"/>')
 
 wing_d = trace(moth & ~antennae)
-disk_d = trace(disk)
-shield_d = trace(shield, smooth=1.2)
+disk_d = (f'M{DISK_X - DISK_R:.1f} {DISK_Y:.1f}a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {2 * DISK_R:.1f} 0'
+          f'a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {-2 * DISK_R:.1f} 0Z')
+shield_d = 'M' + 'L'.join(f'{x:.1f} {y:.1f}' for x, y in SHIELD) + 'Z'
 ant_d = trace(antennae, smooth=0.8)
-moon_d = trace(moon, smooth=1.5)
+# Horns are where the two circles cross.
+hy = MOON_Y - (MOON_R ** 2 - INNER_R ** 2 + INNER_DY ** 2) / (2 * INNER_DY)
+hx = np.sqrt(MOON_R ** 2 - (hy - MOON_Y) ** 2)
+moon_d = (f'M{MOON_X - hx:.1f} {hy:.1f}A{MOON_R:.1f} {MOON_R:.1f} 0 1 0 {MOON_X + hx:.1f} {hy:.1f}'
+          f'A{INNER_R:.1f} {INNER_R:.1f} 0 1 1 {MOON_X - hx:.1f} {hy:.1f}Z')
 J = '\n'.join
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
