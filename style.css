@@ -36,6 +36,4 @@ main {
 .motif {
   width: min(86vmin, 760px);
   height: auto;
-  /* the embroidery sits slightly proud of the pile */
-  filter: drop-shadow(0 3px 3px rgb(32 0 5 / 0.55));
 }
