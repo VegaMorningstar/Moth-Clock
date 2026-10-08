@@ -95,7 +95,38 @@
   <main>
     <div class="motif-wrap">
       <img class="motif" src="moth.svg" width="950" height="830"
-           alt="An embroidered white moth with gold outlines and a dark blue disk, beneath a gold crescent moon">
+           alt="An embroidered white moth with gold outlines and a dark blue disk">
+
+      <!-- Live moon above the moth, drawn by moon.js (centre 476,135, radius 92 in moth.svg's space) -->
+      <svg class="moon-sky" viewBox="0 0 950 830" role="img" aria-label="Moon">
+        <defs>
+          <linearGradient id="moonGold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#e6c48a"/>
+            <stop offset="50%" stop-color="#b98a4e"/>
+            <stop offset="100%" stop-color="#8a6236"/>
+          </linearGradient>
+          <filter id="moonThread" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" result="d"/>
+            <feGaussianBlur in="d" stdDeviation="0.35" result="soft"/>
+            <feDropShadow in="soft" dx="0" dy="2.5" stdDeviation="2.5" flood-color="#200005" flood-opacity="0.65"/>
+          </filter>
+          <clipPath id="moonLitClip"><path id="moonLit"/></clipPath>
+        </defs>
+        <g transform="translate(476 135)">
+          <!-- the unlit part: a faint stitched outline so the moon never vanishes -->
+          <circle r="92" fill="#3a0610" fill-opacity="0.22" stroke="#c9a06a" stroke-opacity="0.45"
+                  stroke-width="1.4" stroke-dasharray="3.2 3"/>
+          <g filter="url(#moonThread)">
+            <g clip-path="url(#moonLitClip)" stroke-linecap="round">
+              <circle r="92" fill="url(#moonGold)"/>
+              <g id="moonStitches"></g>
+            </g>
+          </g>
+          <text id="moonLabel" y="124" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="600"
+                font-size="15" letter-spacing="1.5" fill="#e6c48a" fill-opacity="0.85"></text>
+        </g>
+      </svg>
 
       <!-- Clock on the blue disk. Same coordinate space as moth.svg; the disk is centred at
            (476, 589.5) with radius 124 (printed by tools/build_moth.py). -->
@@ -172,5 +203,7 @@
 
   <script src="carpet.js"></script>
   <script src="clock.js"></script>
+  <script src="moonphase.js"></script>
+  <script src="moon.js"></script>
 </body>
 </html>

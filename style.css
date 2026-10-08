@@ -44,7 +44,8 @@ main {
   height: auto;
 }
 
-.clock {
+.clock,
+.moon-sky {
   position: absolute;
   inset: 0;
   width: 100%;

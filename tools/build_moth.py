@@ -1,9 +1,9 @@
 # Builds moth.svg: clean vector embroidery in the shape of the photo cutout.
 #
 # Only the moth's shape comes from the photo: its silhouette, antennae and the gold
-# pattern on the wings (veins and gold-dusted margins). The crescent and the disk are the original geometric
-# designs, sized and placed where the photo has them. Everything inside them is
-# drawn fresh as crisp satin, gold stitching and gold edging.
+# pattern on the wings (veins and gold-dusted margins). The disk is a clean geometric
+# circle placed where the photo has it; the moon above is drawn live by moon.js.
+# Everything inside these shapes is drawn fresh as crisp satin, gold stitching and gold edging.
 #
 # Usage: python tools/build_moth.py source/moth-cutout.png moth.svg
 
@@ -29,18 +29,10 @@ blue = on & (B > R + 15)
 
 rows = np.where(on.any(axis=1))[0]
 gap = np.where(np.diff(rows) > 20)[0]
-SPLIT = rows[gap[0]] + 10  # crescent above, moth below
+SPLIT = rows[gap[0]] + 10  # the photo's crescent sits above; only the moth below is used
 
 moth = on & (yy >= SPLIT)
 moth = ndi.binary_fill_holes(ndi.binary_closing(moth, iterations=2))
-# Crescent: a clean geometric crescent, sized and placed where the photo's one sits.
-mp = np.argwhere(on & (yy < SPLIT))
-MOON_R = (mp[:, 1].max() - mp[:, 1].min()) / 2 * 1.02
-MOON_X = (mp[:, 1].max() + mp[:, 1].min()) / 2
-MOON_Y = mp[:, 0].max() - MOON_R
-INNER_R, INNER_DY = MOON_R * 0.932, MOON_R * 0.254  # proportions of the first design
-moon = ((np.hypot(xx - MOON_X, yy - MOON_Y) <= MOON_R)
-        & (np.hypot(xx - MOON_X, yy - MOON_Y + INNER_DY) > INNER_R))
 
 ys, xs = np.where(blue)
 DISK_R = (xs.max() - xs.min() + 1) / 2
@@ -171,27 +163,11 @@ def flecks(mask, count, colours, length=(3, 8)):
 
 antenna_flecks = flecks(antennae, 90, ['#e6c48a', '#8f6638', '#d8b57f'], (2, 5))
 
-# Crescent: dense couched stitches along the curve, then seed stitches.
-pts = np.argwhere(moon)
-moon_lines = []
-for y, x in pts[rng.choice(len(pts), 1400, replace=False)]:
-    t = np.arctan2(y - MOON_Y, x - MOON_X) + np.pi / 2 + rng.uniform(-0.5, 0.5)
-    l = rng.uniform(5, 11)
-    moon_lines.append(line(x, y, x + np.cos(t) * l, y + np.sin(t) * l, pick(GOLD), rng.uniform(2, 3)))
-for y, x in pts[rng.choice(len(pts), 380, replace=False)]:
-    moon_lines.append(f'<circle cx="{x}" cy="{y}" r="{rng.uniform(1, 2.2):.1f}" '
-                      f'fill="{pick(["#e6c48a", "#f0d9a8", "#8f6638"])}"/>')
-
 wing_d = trace(moth & ~antennae)
 gold_d = trace(gold, smooth=0.6, tol=0.3)
 disk_d = (f'M{DISK_X - DISK_R:.1f} {DISK_Y:.1f}a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {2 * DISK_R:.1f} 0'
           f'a{DISK_R:.1f} {DISK_R:.1f} 0 1 0 {-2 * DISK_R:.1f} 0Z')
 ant_d = trace(antennae, smooth=0.8)
-# Horns are where the two circles cross.
-hy = MOON_Y - (MOON_R ** 2 - INNER_R ** 2 + INNER_DY ** 2) / (2 * INNER_DY)
-hx = np.sqrt(MOON_R ** 2 - (hy - MOON_Y) ** 2)
-moon_d = (f'M{MOON_X - hx:.1f} {hy:.1f}A{MOON_R:.1f} {MOON_R:.1f} 0 1 0 {MOON_X + hx:.1f} {hy:.1f}'
-          f'A{INNER_R:.1f} {INNER_R:.1f} 0 1 1 {MOON_X - hx:.1f} {hy:.1f}Z')
 J = '\n'.join
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
@@ -221,15 +197,9 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{
   <clipPath id="clipWing"><path d="{wing_d}"/></clipPath>
   <clipPath id="clipDisk"><path d="{disk_d}"/></clipPath>
   <clipPath id="clipAnt"><path d="{ant_d}"/></clipPath>
-  <clipPath id="clipMoon"><path d="{moon_d}"/></clipPath>
 </defs>
 
 <g filter="url(#thread)" stroke-linecap="round" fill="none">
-  <g clip-path="url(#clipMoon)">
-    <path d="{moon_d}" fill="url(#gold)"/>
-    {J(moon_lines)}
-  </g>
-
   <g clip-path="url(#clipAnt)">
     <path d="{ant_d}" fill="url(#gold)"/>
     {J(antenna_flecks)}
