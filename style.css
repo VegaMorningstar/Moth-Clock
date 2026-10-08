@@ -1,5 +1,5 @@
 :root {
-  --velvet: #7a111b;
+  --velvet: #680d17;
 }
 
 * { box-sizing: border-box; }
@@ -28,14 +28,43 @@ html, body {
 main {
   position: relative;
   height: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
 }
 
 .motif-wrap {
   position: relative;
-  width: min(86vmin, 760px);
+  /* leave room under the moth for the caption on short screens */
+  width: min(86vmin, 760px, calc((100vh - 140px) * 950 / 830));
+}
+
+.caption {
+  position: relative;
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: Cinzel, Georgia, serif;
+  font-weight: 600;
+  color: #e6c48a;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(32 0 5 / 0.7);
+}
+
+.caption-moon {
+  font-size: clamp(15px, 2.1vmin, 19px);
+  letter-spacing: 0.1em;
+}
+
+.caption-time {
+  font-size: clamp(12px, 1.6vmin, 15px);
+  letter-spacing: 0.08em;
+  color: #d9c4a0;
+  font-variant-numeric: tabular-nums; /* digits don't jiggle as the seconds change */
 }
 
 .moth-shadow {

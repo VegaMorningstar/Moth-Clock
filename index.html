@@ -40,7 +40,7 @@
       </radialGradient>
     </defs>
 
-    <rect width="100%" height="100%" fill="#7a111b"/>
+    <rect width="100%" height="100%" fill="#680d17"/>
     <rect width="100%" height="100%" filter="url(#crush)"/>
     <rect width="100%" height="100%" filter="url(#sheen)" opacity="0.4"/>
     <rect width="100%" height="100%" filter="url(#pile)"/>
@@ -54,7 +54,8 @@
       <img class="motif" src="moth.svg" width="950" height="830"
            alt="An embroidered white moth with gold outlines and a dark blue disk">
 
-      <!-- Live moon above the moth, drawn by moon.js (centre 476,135, radius 92 in moth.svg's space) -->
+      <!-- Live moon above the moth, drawn by moon.js (centre 476,135, radius 92 in moth.svg's space);
+           its phase name is in the caption below the moth -->
       <svg class="moon-sky" viewBox="0 0 950 830" role="img" aria-label="Moon">
         <defs>
           <linearGradient id="moonGold" x1="0" y1="0" x2="1" y2="1">
@@ -80,8 +81,6 @@
               <g id="moonStitches"></g>
             </g>
           </g>
-          <text id="moonLabel" y="124" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="600"
-                font-size="15" letter-spacing="1.5" fill="#e6c48a" fill-opacity="0.85"></text>
         </g>
       </svg>
 
@@ -151,6 +150,11 @@
         </g>
       </svg>
     </div>
+
+    <p class="caption">
+      <span id="moonLabel" class="caption-moon"></span>
+      <span id="localTime" class="caption-time"></span>
+    </p>
   </main>
 
   <!-- Fine pile laid over everything so the embroidery sits in the velvet, not on top of it -->

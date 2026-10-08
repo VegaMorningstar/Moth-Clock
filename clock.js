@@ -18,6 +18,22 @@ for (let h = 1; h < 12; h++) {
   dots.appendChild(dot);
 }
 
+const localTime = document.getElementById('localTime');
+
+// "Chicago (GMT-5)": city from the device's time zone, plus its current offset.
+function zoneLabel(now) {
+  let zone = '';
+  let offset = '';
+  try {
+    zone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    offset = new Intl.DateTimeFormat([], { timeZoneName: 'shortOffset' })
+      .formatToParts(now).find((p) => p.type === 'timeZoneName')?.value || '';
+  } catch {}
+  const city = zone.split('/').pop().replace(/_/g, ' ');
+  if (city && offset) return `${city} (${offset})`;
+  return city || offset;
+}
+
 const turn = (el, deg) => el.setAttribute('transform', `rotate(${deg.toFixed(3)})`);
 
 function tick() {
@@ -28,6 +44,9 @@ function tick() {
   turn(secondHand, s * 6);
   turn(minuteHand, m * 6);
   turn(hourHand, h * 30);
+  const zone = zoneLabel(now);
+  localTime.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+    + (zone ? ` · ${zone}` : '');
   clock.setAttribute('aria-label', `Clock showing ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
   // land on the next whole second so the second hand ticks in step with the device clock
   setTimeout(tick, 1000 - now.getMilliseconds());
